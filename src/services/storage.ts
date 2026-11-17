@@ -15,6 +15,7 @@ import {
 } from '../types/music';
 import { generateInitialAvatar, getEffectiveAvatar } from '../utils/avatar';
 import { AuthService } from './authService';
+import { ApiConfig } from './apiConfig';
 
 const GUEST_USER_PROFILE: UserProfile = {
   id: 'guest',
@@ -115,7 +116,7 @@ export class StorageService {
     if (!token || this.activeUserId === 'guest') return;
 
     try {
-      await fetch('/api/user/sync', {
+      await ApiConfig.safeFetch('/api/user/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ export class StorageService {
     if (!token || !userId || userId === 'guest') return false;
 
     try {
-      const res = await fetch('/api/user/data', {
+      const res = await ApiConfig.safeFetch('/api/user/data', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -921,6 +922,25 @@ export class StorageService {
   public static saveSmartShuffleConfig(config: RecommendationConfig): void {
     try {
       localStorage.setItem(this.getUserKey('smart_shuffle_config_v1'), JSON.stringify(config));
+    } catch {}
+  }
+
+  // --- CROSS-PLATFORM BACKEND SERVER URL ---
+  public static getServerUrl(): string {
+    try {
+      const val = localStorage.getItem('papabvtify_server_url');
+      if (val && val.trim()) return val.trim();
+    } catch {}
+    return '';
+  }
+
+  public static setServerUrl(url: string): void {
+    try {
+      if (url && url.trim()) {
+        localStorage.setItem('papabvtify_server_url', url.trim());
+      } else {
+        localStorage.removeItem('papabvtify_server_url');
+      }
     } catch {}
   }
 }

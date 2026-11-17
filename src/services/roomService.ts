@@ -1,5 +1,6 @@
 import { ListeningRoom, RoomParticipant, RoomReaction, RoomChatMessage, Song, SongRequest } from '../types/music';
 import { StorageService } from './storage';
+import { ApiConfig } from './apiConfig';
 
 export type RoomEventCallback = (event: {
   type: 
@@ -70,7 +71,7 @@ export class RoomService {
     allowGuestControl: boolean = false
   ): Promise<{ room: ListeningRoom; participantId: string; isHost: boolean }> {
     const user = StorageService.getUserRoomIdentity();
-    const res = await fetch('/api/rooms/create', {
+    const res = await ApiConfig.safeFetch('/api/rooms/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -95,7 +96,7 @@ export class RoomService {
     participantName: string
   ): Promise<{ room: ListeningRoom; participantId: string; isHost: boolean }> {
     const user = StorageService.getUserRoomIdentity();
-    const res = await fetch('/api/rooms/join', {
+    const res = await ApiConfig.safeFetch('/api/rooms/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -118,7 +119,7 @@ export class RoomService {
     this.activeCallback = onEvent;
     this.initBroadcastChannel(code);
 
-    const sseUrl = `/api/rooms/events?code=${encodeURIComponent(code)}&participantId=${encodeURIComponent(participantId)}`;
+    const sseUrl = ApiConfig.resolveApiUrl(`/api/rooms/events?code=${encodeURIComponent(code)}&participantId=${encodeURIComponent(participantId)}`);
     const es = new EventSource(sseUrl);
 
     es.addEventListener('init', (e: any) => {
@@ -215,7 +216,7 @@ export class RoomService {
     requester: { id: string; name: string; username?: string; avatar?: string }
   ): Promise<{ success: boolean; request?: SongRequest; error?: string }> {
     try {
-      const res = await fetch('/api/rooms/request/create', {
+      const res = await ApiConfig.safeFetch('/api/rooms/request/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -256,7 +257,7 @@ export class RoomService {
     hostParticipantId: string
   ): Promise<{ success: boolean; error?: string; queue?: Song[] }> {
     try {
-      const res = await fetch('/api/rooms/request/respond', {
+      const res = await ApiConfig.safeFetch('/api/rooms/request/respond', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -293,7 +294,7 @@ export class RoomService {
     requesterId: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const res = await fetch('/api/rooms/request/cancel', {
+      const res = await ApiConfig.safeFetch('/api/rooms/request/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, requestId, participantId: requesterId })
@@ -347,7 +348,7 @@ export class RoomService {
     }
 
     try {
-      await fetch('/api/rooms/sync', {
+      await ApiConfig.safeFetch('/api/rooms/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -382,7 +383,7 @@ export class RoomService {
     }
 
     try {
-      await fetch('/api/rooms/reaction', {
+      await ApiConfig.safeFetch('/api/rooms/reaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, participantName, emoji })
@@ -410,7 +411,7 @@ export class RoomService {
     }
 
     try {
-      await fetch('/api/rooms/chat', {
+      await ApiConfig.safeFetch('/api/rooms/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, participantId, participantName, text })
@@ -424,7 +425,7 @@ export class RoomService {
   public static async leaveRoom(code: string, participantId: string) {
     this.disconnect();
     try {
-      await fetch('/api/rooms/leave', {
+      await ApiConfig.safeFetch('/api/rooms/leave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, participantId })
@@ -438,7 +439,7 @@ export class RoomService {
   public static async endRoom(code: string, participantId: string) {
     this.disconnect();
     try {
-      await fetch('/api/rooms/end', {
+      await ApiConfig.safeFetch('/api/rooms/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, participantId })

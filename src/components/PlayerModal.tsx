@@ -378,7 +378,7 @@ export const PlayerModal: React.FC<Props> = ({
               LEFT PANE: FOTO ALBUM, JUDUL, NEXT, PAUSE, DURASI
               ============================================================ */}
           {(activeTab === 'player' || activeTab === 'split') && (
-            <div className={`flex-1 overflow-y-auto px-6 sm:px-10 py-5 flex flex-col justify-between space-y-4 animate-fadeIn pb-8 ${
+            <div className={`flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 py-4 sm:py-5 flex flex-col justify-between space-y-3.5 sm:space-y-4 animate-fadeIn pb-24 sm:pb-8 ${
               activeTab === 'split' ? 'lg:w-[48%] lg:border-r lg:border-[#dce7f7] dark:lg:border-[#222c45]' : 'max-w-xl mx-auto w-full'
             }`}>
               
@@ -393,7 +393,7 @@ export const PlayerModal: React.FC<Props> = ({
               )}
 
               {/* High-Res Album Artwork with Elegant Fantasy Placeholder */}
-              <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 mx-auto rounded-3xl overflow-hidden shadow-xl border border-[#dce7f7] dark:border-[#283556] shrink-0 group bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254]">
+              <div className="relative w-44 h-44 sm:w-60 sm:h-60 lg:w-72 lg:h-72 mx-auto rounded-3xl overflow-hidden shadow-xl border border-[#dce7f7] dark:border-[#283556] shrink-0 group bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254]">
                 {!imageLoaded && !imageError && (
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254] flex flex-col items-center justify-center p-4 text-center">
                     <Disc className="w-12 h-12 text-[#9ab3f5] animate-spin" style={{ animationDuration: '6s' }} />

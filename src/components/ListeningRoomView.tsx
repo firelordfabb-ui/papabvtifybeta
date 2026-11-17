@@ -10,6 +10,7 @@ import {
 import { RoomService } from '../services/roomService';
 import { StorageService } from '../services/storage';
 import { AudioEngine } from '../services/audioEngine';
+import { ApiConfig } from '../services/apiConfig';
 import { getEffectiveAvatar, generateInitialAvatar } from '../utils/avatar';
 import {
   Users,
@@ -132,9 +133,10 @@ export const ListeningRoomView: React.FC<Props> = ({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(requestSearchQuery.trim())}`);
-        if (res.ok) {
-          const songs = await res.json();
+        const res = await ApiConfig.safeFetch(`/api/search?q=${encodeURIComponent(requestSearchQuery.trim())}`);
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          const songs = await res.json().catch(() => []);
           setSearchResults(songs || []);
         }
       } catch {} finally {

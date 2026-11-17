@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238b5cf6'><circle cx='12' cy='12' r='10' fill='%238b5cf6'/><path d='M10 8v8l6-4z' fill='%23ffffff'/></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>papabvtify — Next-Gen Music Streaming</title>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#142247" />
@@ -19,14 +19,15 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       const isElectron = navigator.userAgent.toLowerCase().includes('electron') || !!window.PAPABVTIFY_DESKTOP;
-      if (isElectron) {
-        // Desktop Electron: unregister any legacy service workers and clear cache storage
+      const isCapacitor = window.Capacitor !== undefined || !!window.Capacitor?.isNativePlatform?.() || window.location.protocol === 'capacitor:';
+      if (isElectron || isCapacitor) {
+        // Desktop Electron & Capacitor: unregister any legacy service workers and clear cache storage
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(regs => {
             for (const r of regs) r.unregister();
           });
         }
-        if ('caches' in window) {
+        if (isElectron && 'caches' in window) {
           caches.keys().then(keys => {
             for (const k of keys) caches.delete(k);
           });

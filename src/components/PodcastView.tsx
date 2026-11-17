@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PodcastService, PodcastEpisode, PodcastChannel } from '../services/podcastService';
 import { Song } from '../types/music';
+import { ApiConfig } from '../services/apiConfig';
 import {
   Radio,
   Play,
@@ -57,9 +58,10 @@ export const PodcastView: React.FC<Props> = ({
     const timer = setTimeout(async () => {
       setIsSearchingLive(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim() + ' podcast')}`);
-        if (res.ok) {
-          const items = await res.json();
+        const res = await ApiConfig.safeFetch(`/api/search?q=${encodeURIComponent(searchQuery.trim() + ' podcast')}`);
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          const items = await res.json().catch(() => []);
           if (Array.isArray(items)) {
             const mapped: PodcastEpisode[] = items.slice(0, 10).map((v: any) => ({
               id: v.id,
@@ -70,7 +72,7 @@ export const PodcastView: React.FC<Props> = ({
               categoryLabel: 'Eksplorasi Live',
               duration: v.duration || 1800,
               thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
-              streamUrl: v.streamUrl || `/api/stream?id=${v.id}`,
+              streamUrl: ApiConfig.resolveStreamUrl(v.streamUrl || `/api/stream?id=${v.id}`),
               description: v.title,
               publishedDate: 'Episode Publik',
               listens: 'Live Stream'

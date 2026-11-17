@@ -27,6 +27,7 @@ import { RecommendationEngine } from './services/recommendationEngine';
 import { UnderwaterAudio, DEFAULT_UNDERWATER_CONFIG } from './services/underwaterService';
 import { Playback } from './services/playbackManager';
 import { RoomService } from './services/roomService';
+import { ApiConfig } from './services/apiConfig';
 import { UserAccount } from './types/music';
 
 // Main View Components
@@ -350,7 +351,7 @@ export const App: React.FC = () => {
     engine.setVolume(volume);
 
     if (!audio.src && currentSong) {
-      audio.src = currentSong.streamUrl || `/api/stream?id=${currentSong.id}`;
+      audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
       updateMediaSession(currentSong);
     }
 
@@ -466,7 +467,7 @@ export const App: React.FC = () => {
       engine.pause();
     } else {
       if (!audio.src && currentSong) {
-        audio.src = currentSong.streamUrl || `/api/stream?id=${currentSong.id}`;
+        audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
       }
       try {
         await engine.play();
@@ -706,7 +707,7 @@ export const App: React.FC = () => {
         const found = await InnerTubeService.search(`${playableSong.title} ${playableSong.artist}`);
         if (found && found.length > 0) {
           playableSong.id = found[0].id;
-          playableSong.streamUrl = found[0].streamUrl || `/api/stream?id=${found[0].id}`;
+          playableSong.streamUrl = ApiConfig.resolveStreamUrl(found[0].streamUrl || found[0].id);
           if (!playableSong.thumbnail) playableSong.thumbnail = found[0].thumbnail;
         }
       } catch (err) {
@@ -740,10 +741,10 @@ export const App: React.FC = () => {
       if (offlineBlobUrl) {
         audio.src = offlineBlobUrl;
       } else {
-        audio.src = playableSong.streamUrl || `/api/stream?id=${playableSong.id}`;
+        audio.src = ApiConfig.resolveStreamUrl(playableSong.streamUrl || playableSong.id);
       }
     } catch (_) {
-      audio.src = playableSong.streamUrl || `/api/stream?id=${playableSong.id}`;
+      audio.src = ApiConfig.resolveStreamUrl(playableSong.streamUrl || playableSong.id);
     }
 
     try {

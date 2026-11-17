@@ -112,13 +112,13 @@ export const BerandaView: React.FC<Props> = ({
   ];
 
   return (
-    <div className="flex-1 h-full overflow-y-auto px-6 sm:px-10 py-3 space-y-3.5 max-w-7xl mx-auto animate-fadeIn select-none pb-28 relative">
+    <div className="flex-1 h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-10 py-3 space-y-3.5 max-w-7xl mx-auto animate-fadeIn select-none pb-32 relative">
       {/* ==============================================================
           HERO SECTION WITH FANTASY CITADEL BACKDROP
           ============================================================== */}
       <div className="relative rounded-2xl overflow-hidden pt-1 pb-1">
         {/* Floating Fantasy Landscape in Top-Right Background */}
-        <div className="absolute top-0 right-2 w-80 sm:w-[420px] h-36 pointer-events-none opacity-90 z-0 overflow-hidden [mask-image:linear-gradient(to_left,black_60%,transparent_100%)]">
+        <div className="absolute top-0 right-0 w-64 sm:w-80 md:w-[420px] max-w-full h-36 pointer-events-none opacity-90 z-0 overflow-hidden [mask-image:linear-gradient(to_left,black_60%,transparent_100%)]">
           <FantasyLandscape className="w-full h-full" />
         </div>
 

@@ -1,5 +1,6 @@
 import { Song } from '../types/music';
 import { StorageService } from './storage';
+import { ApiConfig } from './apiConfig';
 
 /**
  * Authentic, verified starting catalog with 100% matched YouTube IDs,
@@ -149,9 +150,10 @@ export class InnerTubeService {
     }
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal });
-      if (res.ok) {
-        const data = await res.json();
+      const res = await ApiConfig.safeFetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal });
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json().catch(() => []);
         const rawSongs: Song[] = Array.isArray(data)
           ? data.map((item: any) => ({
               id: item.id,
@@ -160,7 +162,7 @@ export class InnerTubeService {
               album: item.album || 'Single',
               duration: item.duration || 200,
               thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
-              streamUrl: `/api/stream?id=${item.id}`,
+              streamUrl: ApiConfig.resolveStreamUrl(`/api/stream?id=${item.id}`),
               liked: StorageService.isFavorite(item.id)
             }))
           : [];

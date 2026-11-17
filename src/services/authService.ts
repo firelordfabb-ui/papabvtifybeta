@@ -1,5 +1,6 @@
 import { UserAccount, UserProfile } from '../types/music';
 import { getEffectiveAvatar, generateInitialAvatar } from '../utils/avatar';
+import { ApiConfig } from './apiConfig';
 
 const AUTH_TOKEN_KEY = 'papabvtify_session_token_v2';
 const AUTH_USER_KEY = 'papabvtify_auth_user_v2';
@@ -130,7 +131,7 @@ export class AuthService {
     avatarType?: 'initial' | 'geometric' | 'custom';
   }): Promise<AuthResponse> {
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await ApiConfig.safeFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -174,7 +175,7 @@ export class AuthService {
     const cleanIdentifier = (data.identifier || '').toLowerCase().trim();
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await ApiConfig.safeFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: cleanIdentifier, password: data.password })
@@ -214,7 +215,7 @@ export class AuthService {
    */
   public static async getGoogleConfig(): Promise<{ configured: boolean; clientId: string | null }> {
     try {
-      const res = await fetch('/api/auth/google/status');
+      const res = await ApiConfig.safeFetch('/api/auth/google/status');
       if (res.ok) {
         return await res.json();
       }
@@ -234,7 +235,7 @@ export class AuthService {
     avatar?: string;
   }): Promise<AuthResponse> {
     try {
-      const res = await fetch('/api/auth/google', {
+      const res = await ApiConfig.safeFetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -287,7 +288,7 @@ export class AuthService {
     if (!token) return null;
 
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await ApiConfig.safeFetch('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -313,7 +314,7 @@ export class AuthService {
     const token = this.getToken();
     if (token) {
       try {
-        await fetch('/api/auth/logout', {
+        await ApiConfig.safeFetch('/api/auth/logout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -341,7 +342,7 @@ export class AuthService {
    */
   public static async forgotPassword(email: string): Promise<AuthResponse> {
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await ApiConfig.safeFetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -361,7 +362,7 @@ export class AuthService {
     newPassword: string;
   }): Promise<AuthResponse> {
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await ApiConfig.safeFetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -387,7 +388,7 @@ export class AuthService {
     if (!token) return { success: false, error: 'Belum masuk ke akun.' };
 
     try {
-      const res = await fetch('/api/auth/update-profile', {
+      const res = await ApiConfig.safeFetch('/api/auth/update-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

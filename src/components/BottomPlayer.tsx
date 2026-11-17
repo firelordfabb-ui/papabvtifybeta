@@ -135,10 +135,10 @@ export const BottomPlayer: React.FC<Props> = ({
       {/* ==============================================================
           MOBILE VIEW: FLOATING LIQUID GLASS MINI PLAYER (Matching Reference)
           ============================================================== */}
-      <div className="md:hidden fixed bottom-[74px] inset-x-3.5 z-40 select-none animate-fadeIn flex justify-center pointer-events-none">
+      <div className="md:hidden fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] inset-x-3 z-40 select-none animate-fadeIn flex justify-center pointer-events-none">
         <div
           onClick={onOpenPlayerModal}
-          className="pointer-events-auto liquid-mini-player rounded-full p-2 pr-3 flex items-center justify-between gap-2.5 shadow-2xl cursor-pointer group active:scale-[0.98] transition-all max-w-sm w-full"
+          className="pointer-events-auto liquid-mini-player rounded-full p-2 pr-3 flex items-center justify-between gap-2.5 shadow-2xl cursor-pointer group active:scale-[0.98] transition-all max-w-md w-full"
         >
           {/* Left: Thumbnail & Title */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">

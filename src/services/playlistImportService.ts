@@ -1,6 +1,7 @@
 import { Song } from '../types/music';
 import { InnerTubeService } from './innertube';
 import { StorageService } from './storage';
+import { ApiConfig } from './apiConfig';
 
 export type TrackMatchStatus = 'Matched' | 'Needs Verification' | 'Not Found';
 
@@ -85,8 +86,9 @@ export class PlaylistImportService {
 
     // 1. Fetch authentic playlist metadata and tracks from backend extractor
     const endpoint = `/api/playlist/source?url=${encodeURIComponent(url.trim())}`;
-    const res = await fetch(endpoint);
-    if (!res.ok) {
+    const res = await ApiConfig.safeFetch(endpoint);
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) {
       let errJson: any = null;
       try {
         errJson = await res.json();
@@ -116,7 +118,7 @@ export class PlaylistImportService {
           album: sourceData.title,
           duration: item.duration || 210,
           thumbnail: item.thumbnail,
-          streamUrl: `/api/stream?id=${item.sourceId}`,
+          streamUrl: ApiConfig.resolveStreamUrl(`/api/stream?id=${item.sourceId}`),
           liked: StorageService.isFavorite(item.sourceId)
         };
 

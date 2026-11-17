@@ -1,5 +1,6 @@
 import { Song, DownloadItem } from '../types/music';
 import { StorageService } from './storage';
+import { ApiConfig } from './apiConfig';
 
 const DB_NAME = 'papabvtify_offline_db';
 const DB_VERSION = 1;
@@ -229,10 +230,10 @@ class DownloadServiceManager {
       status: 'preparing'
     });
 
-    const streamUrl = song.streamUrl || `/api/stream?id=${song.id}`;
+    const streamUrl = ApiConfig.resolveStreamUrl(song.streamUrl || song.id);
 
     try {
-      const response = await fetch(streamUrl, {
+      const response = await ApiConfig.safeFetch(streamUrl, {
         signal: controller.signal
       });
 

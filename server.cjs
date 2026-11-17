@@ -316,8 +316,9 @@ function createServer() {
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Range, X-Participant-Id, X-User-Id');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
@@ -1361,9 +1362,9 @@ function createServer() {
 function startServer(port = 5188) {
   return new Promise((resolve, reject) => {
     const server = createServer();
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, '0.0.0.0', () => {
       const actualPort = server.address() ? server.address().port : port;
-      console.log(`[PAPABVTIFY Backend] Listening on http://127.0.0.1:${actualPort}`);
+      console.log(`[PAPABVTIFY Backend] Listening on http://0.0.0.0:${actualPort} (Accessible via LAN / 127.0.0.1)`);
       resolve({ server, port: actualPort });
     });
     server.on('error', (err) => {

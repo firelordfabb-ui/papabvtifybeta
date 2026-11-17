@@ -1,5 +1,6 @@
 import { Song } from '../types/music';
 import { StorageService } from './storage';
+import { ApiConfig } from './apiConfig';
 
 export interface FriendUser {
   id: string;
@@ -69,9 +70,10 @@ export class FriendService {
 
     // Lookup on server to verify user actually exists
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(clean)}`);
-      if (res.ok) {
-        const foundUser = await res.json();
+      const res = await ApiConfig.safeFetch(`/api/users/search?q=${encodeURIComponent(clean)}`);
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const foundUser = await res.json().catch(() => null);
         if (foundUser && foundUser.username) {
           const newRequest: FriendUser = {
             id: foundUser.id || `user_${Date.now()}`,
