@@ -1,0 +1,510 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   PAPABVTIFY — Dreamy Fantasy Music Experience Design System
+   Design Reference: Soft Ice Blue, Lavender, Periwinkle, Cloud White,
+   Midnight Navy typography, Anime-inspired fantasy citadel & mascot.
+   Zero Liquid Glass blur overload — crisp, artistic, layered, and fast.
+   ========================================================================== */
+
+:root {
+  --fantasy-bg: #eef4fd;
+  --fantasy-card: #ffffff;
+  --fantasy-border: #dce7f7;
+  --fantasy-navy: #142247;
+  --fantasy-slate: #5d729c;
+  --fantasy-periwinkle: #9ab3f5;
+  --fantasy-lavender: #e4e8fc;
+  --fantasy-blue-glow: rgba(154, 179, 245, 0.3);
+
+  --bg-main: #edf3fd;
+  --bg-card: #ffffff;
+  --text-main: #142247;
+  --text-muted: #5d729c;
+  --accent-color: #142247;
+  --accent-vermillion: #ff442b;
+}
+
+.dark-theme, .dark {
+  --bg-main: #070B18;
+  --bg-card: #101A35;
+  --text-main: #EAF0FF;
+  --text-muted: #94A6D2;
+  --accent-color: #42DDAA;
+  --accent-secondary: #9275E8;
+  --accent-blue: #315BCE;
+  --accent-vermillion: #ff442b;
+  --fantasy-border: #1E2D56;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   ADAPTIVE PERFORMANCE ENGINE: BACKGROUND SUSPENSION RULES
+   When Alt+Tabbing or minimizing to Chrome/desktop, pause all GPU animations
+   to eliminate DWM stutter on Intel HD Graphics 4400 / Core i5-4200U
+   ========================================================================== */
+body.app-background-mode *,
+body.app-background-mode *::before,
+body.app-background-mode *::after {
+  animation-play-state: paused !important;
+  transition-duration: 0s !important;
+}
+
+body.app-background-mode canvas {
+  visibility: hidden !important;
+}
+
+body.app-background-mode .aurora-layer,
+body.app-background-mode .underwater-background {
+  filter: none !important;
+  opacity: 0.3 !important;
+}
+
+/* --------------------------------------------------------------------------
+   DREAMY FANTASY DESIGN SYSTEM UTILITIES
+   -------------------------------------------------------------------------- */
+
+/* Permanent Sidebar */
+.fantasy-sidebar {
+  background: #f1f6fd;
+  border-right: 1px solid #dce7f7;
+}
+
+.dark .fantasy-sidebar, .dark-theme .fantasy-sidebar {
+  background: #0f1424;
+  border-right: 1px solid #1e263d;
+}
+
+/* Active Nav Indicator matching reference */
+.fantasy-nav-active {
+  background: #e3edfc;
+  color: #142247;
+  position: relative;
+  font-weight: 700;
+}
+
+.fantasy-nav-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  height: 70%;
+  width: 4px;
+  background: #142247;
+  border-radius: 9999px;
+}
+
+.dark .fantasy-nav-active, .dark-theme .fantasy-nav-active {
+  background: #1d253d;
+  color: #f0f4fc;
+}
+
+.dark .fantasy-nav-active::before, .dark-theme .fantasy-nav-active::before {
+  background: #9ab3f5;
+}
+
+/* Fantasy Card Surfaces */
+.fantasy-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dce7f7;
+  box-shadow: 0 4px 20px rgba(25, 45, 95, 0.05);
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fantasy-card:hover {
+  box-shadow: 0 8px 28px rgba(25, 45, 95, 0.09);
+  border-color: #cadcf8;
+}
+
+.dark .fantasy-card, .dark-theme .fantasy-card {
+  background: rgba(21, 27, 46, 0.92);
+  border: 1px solid #232c44;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark .fantasy-card:hover, .dark-theme .fantasy-card:hover {
+  border-color: #354366;
+}
+
+/* Capsule Song Card in Reference Image (Rounded-full) */
+.fantasy-song-capsule {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #dce7f7;
+  border-radius: 9999px;
+  box-shadow: 0 2px 10px rgba(25, 45, 95, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fantasy-song-capsule:hover {
+  background: #ffffff;
+  border-color: #c2d8fa;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(25, 45, 95, 0.08);
+}
+
+.dark .fantasy-song-capsule, .dark-theme .fantasy-song-capsule {
+  background: rgba(23, 29, 49, 0.92);
+  border: 1px solid #28334e;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark .fantasy-song-capsule:hover, .dark-theme .fantasy-song-capsule:hover {
+  background: #1e2640;
+  border-color: #3b4b72;
+}
+
+/* Fantasy Mood Pills */
+.fantasy-pill {
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dce7f7;
+  color: #4a5d84;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fantasy-pill:hover {
+  color: #142247;
+  border-color: #bad3f8;
+  background: #ffffff;
+}
+
+.fantasy-pill-active {
+  border-radius: 9999px;
+  background: #142247;
+  border: 1px solid #142247;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(20, 34, 71, 0.22);
+}
+
+.dark .fantasy-pill, .dark-theme .fantasy-pill {
+  background: rgba(21, 27, 46, 0.9);
+  border: 1px solid #232c44;
+  color: #94a7cb;
+}
+
+.dark .fantasy-pill:hover, .dark-theme .fantasy-pill:hover {
+  color: #ffffff;
+  border-color: #3b4b72;
+}
+
+.dark .fantasy-pill-active, .dark-theme .fantasy-pill-active {
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  color: #0f1424;
+}
+
+/* Permanent Desktop Bottom Player */
+.fantasy-player-dock {
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid #dce7f7;
+  box-shadow: 0 -4px 24px rgba(20, 35, 75, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .fantasy-player-dock, .dark-theme .fantasy-player-dock {
+  background: rgba(14, 18, 32, 0.96);
+  border-top: 1px solid #1e263d;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Backward-compatible alias classes so old components don't break */
+.liquid-mini-player, .editorial-mini-player {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dce7f7;
+  box-shadow: 0 10px 30px rgba(20, 35, 75, 0.08);
+  color: #142247;
+}
+
+.dark .liquid-mini-player, .dark-theme .liquid-mini-player,
+.dark .editorial-mini-player, .dark-theme .editorial-mini-player {
+  background: rgba(18, 24, 42, 0.95);
+  border: 1px solid #263350;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  color: #f0f4fc;
+}
+
+.liquid-nav-dock, .editorial-nav-dock {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dce7f7;
+  box-shadow: 0 12px 35px rgba(20, 35, 75, 0.08);
+}
+
+.dark .liquid-nav-dock, .dark-theme .liquid-nav-dock,
+.dark .editorial-nav-dock, .dark-theme .editorial-nav-dock {
+  background: rgba(15, 20, 35, 0.95);
+  border: 1px solid #232d46;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+}
+
+.liquid-glass, .editorial-surface {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #dce7f7;
+  box-shadow: 0 4px 16px rgba(20, 35, 75, 0.04);
+  color: #142247;
+}
+
+.dark .liquid-glass, .dark-theme .liquid-glass,
+.dark .editorial-surface, .dark-theme .editorial-surface {
+  background: rgba(20, 26, 45, 0.94);
+  border: 1px solid #232c44;
+  color: #f0f4fc;
+}
+
+.liquid-glass-pill {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #dce7f7;
+}
+
+.dark .liquid-glass-pill, .dark-theme .liquid-glass-pill {
+  background: rgba(25, 33, 56, 0.88);
+  border: 1px solid #28334e;
+}
+
+.liquid-glass-modal {
+  background: #ffffff;
+  border: 1px solid #dce7f7;
+  box-shadow: 0 25px 60px rgba(15, 28, 62, 0.15);
+}
+
+.dark .liquid-glass-modal, .dark-theme .liquid-glass-modal {
+  background: #12172a;
+  border: 1px solid #232d48;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* Raised Liquid Glass Surface */
+.editorial-surface-raised {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.dark .editorial-surface-raised, .dark-theme .editorial-surface-raised {
+  background: #161822;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* Desktop Liquid Player Dock (Full Bottom Bar) */
+.liquid-player-dock, .editorial-player-dock {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+.dark .liquid-player-dock, .dark-theme .liquid-player-dock,
+.dark .editorial-player-dock, .dark-theme .editorial-player-dock {
+  background: #0c0d13;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.7);
+  color: #f8fafc;
+}
+
+/* Liquid Glass Modal */
+.liquid-glass-modal, .editorial-modal {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+  color: #0f172a;
+}
+
+.dark .liquid-glass-modal, .dark-theme .liquid-glass-modal,
+.dark .editorial-modal, .dark-theme .editorial-modal {
+  background: rgba(14, 16, 25, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85);
+  color: #f8fafc;
+}
+
+/* Liquid Glass Pill / Button */
+.liquid-glass-pill, .editorial-pill, .glass-pill {
+  background: rgba(241, 245, 249, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #334155;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-pill:hover, .editorial-pill:hover, .glass-pill:hover {
+  background: rgba(226, 232, 240, 0.95);
+  color: #0f172a;
+}
+
+.dark .liquid-glass-pill, .dark-theme .liquid-glass-pill,
+.dark .editorial-pill, .dark-theme .editorial-pill,
+.dark .glass-pill, .dark-theme .glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #cbd5e1;
+}
+
+.dark .liquid-glass-pill:hover, .dark-theme .liquid-glass-pill:hover,
+.dark .editorial-pill:hover, .dark-theme .editorial-pill:hover,
+.dark .glass-pill:hover, .dark-theme .glass-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* Monogram Badge */
+.editorial-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.04);
+  color: #1e293b;
+}
+
+.dark .editorial-badge, .dark-theme .editorial-badge {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f6fa;
+}
+
+.editorial-badge-accent {
+  border-color: rgba(255, 68, 43, 0.4);
+  background: rgba(255, 68, 43, 0.12);
+  color: #ff5533;
+}
+
+/* --------------------------------------------------------------------------
+   SMOOTH NATURAL ANIMATIONS & TIMING (Fade, Slide, Scale)
+   -------------------------------------------------------------------------- */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 68, 43, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 68, 43, 0.5);
+  }
+}
+
+/* Underwater Mode High-Efficiency Hardware-Accelerated Animations */
+@keyframes underwaterBubbleRise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(14px, -55vh, 0) scale(1.05);
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-10px, -115vh, 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes underwaterMantaGlide {
+  0% {
+    transform: translate3d(-20vw, 0, 0) scale(0.9) rotate(2deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(50vw, -40px, 0) scale(1.05) rotate(-1deg);
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate3d(120vw, -20px, 0) scale(1.1) rotate(3deg);
+    opacity: 0;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Clean Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 160, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 160, 0.55);
+}

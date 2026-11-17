@@ -1,0 +1,15 @@
+{
+  "appId": "com.papabvtify.music",
+  "appName": "PAPABVTIFY",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#edf3fd"
+    }
+  }
+}
