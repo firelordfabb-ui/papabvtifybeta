@@ -78,22 +78,22 @@ export const Navbar: React.FC<Props> = ({
   };
 
   return (
-    <header className="h-16 px-4 sm:px-8 border-b border-black/5 dark:border-[#222533] flex items-center justify-between z-30 select-none bg-white/90 dark:bg-[#0c0d13]/90 backdrop-blur-xl text-slate-900 dark:text-white shrink-0">
+    <header className="min-h-14 h-auto py-2.5 px-3.5 sm:px-8 pt-[max(0.75rem,env(safe-area-inset-top,0px))] border-b border-black/5 dark:border-[#222533] flex items-center justify-between gap-2 z-30 select-none bg-white/95 dark:bg-[#0c0d13]/95 backdrop-blur-xl text-slate-900 dark:text-white shrink-0">
       {/* Brand Masthead */}
       <div
         onClick={() => setActiveTab('beranda')}
-        className="flex items-center gap-3 cursor-pointer group shrink-0"
+        className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
       >
         <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-[#181924] border border-black/10 dark:border-[#2d3042] flex items-center justify-center shadow-md">
           <span className="text-xs font-black font-mono tracking-tighter text-[#ff442b]">
             PV
           </span>
         </div>
-        <div className="hidden lg:block">
+        <div>
           <span className="text-sm font-black tracking-tight text-slate-900 dark:text-[#f5f6fa] group-hover:text-[#ff442b] transition">
             PAPABVTIFY
           </span>
-          <span className="ml-2 font-mono text-[9px] tracking-widest text-[#ff442b] uppercase font-bold">
+          <span className="hidden sm:inline ml-2 font-mono text-[9px] tracking-widest text-[#ff442b] uppercase font-bold">
             PRO STREAMING
           </span>
         </div>
@@ -127,12 +127,21 @@ export const Navbar: React.FC<Props> = ({
         })}
       </nav>
 
-      {/* Right Controls: Speed, Timer, Visualizer, Perf Mode & Auth */}
-      <div className="flex items-center gap-2 shrink-0">
+      {/* Right Controls: Search, Speed, Timer, Visualizer, Perf Mode & Auth */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Mobile Quick Search Button */}
+        <button
+          onClick={() => setActiveTab('cari')}
+          className="sm:hidden p-2 rounded-xl liquid-glass-pill text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition active:scale-95"
+          title="Cari Musik"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+
         {/* Speed Indicator Pill */}
         <button
           onClick={onOpenSpeedModal}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border transition active:scale-95 ${
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border transition active:scale-95 ${
             playbackSpeed !== 1.0
               ? 'bg-[#1f1618] border-[#ff442b] text-[#ff442b]'
               : 'bg-[#14151e] border-[#222533] text-slate-300 hover:text-white'
@@ -146,7 +155,7 @@ export const Navbar: React.FC<Props> = ({
         {/* Sleep Timer Indicator */}
         <button
           onClick={onOpenSleepTimerModal}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border transition active:scale-95 ${
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-bold border transition active:scale-95 ${
             sleepTimer.active
               ? 'bg-[#181924] border-indigo-500 text-indigo-300'
               : 'bg-[#14151e] border-[#222533] text-slate-300 hover:text-white'
@@ -162,7 +171,7 @@ export const Navbar: React.FC<Props> = ({
         {/* Cinematic Visualizer */}
         <button
           onClick={onOpenVisualizerModal}
-          className="p-2 bg-[#14151e] border border-[#222533] hover:border-slate-500 text-slate-300 hover:text-white transition active:scale-95"
+          className="hidden sm:flex p-2 bg-[#14151e] border border-[#222533] hover:border-slate-500 text-slate-300 hover:text-white transition active:scale-95"
           title="Buka Visualizer Sinematik"
         >
           <Activity className="w-3.5 h-3.5 text-[#ff442b]" />

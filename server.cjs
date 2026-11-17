@@ -330,6 +330,12 @@ function createServer() {
 
     // --- API ENDPOINTS ---
     if (url.pathname.startsWith('/api/')) {
+      // 0. Health Check
+      if (url.pathname === '/api/health') {
+        res.setHeader('Content-Type', 'application/json');
+        return res.end(JSON.stringify({ status: 'ok', time: Date.now(), platform: 'PAPABVTIFY Backend Node' }));
+      }
+
       // 1. Register
       if (url.pathname === '/api/auth/register' && req.method === 'POST') {
         const body = await parseJsonBody(req);

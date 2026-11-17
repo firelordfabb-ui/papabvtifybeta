@@ -383,12 +383,24 @@ export const App: React.FC = () => {
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
+    const onError = () => {
+      setIsPlaying(false);
+      console.warn('Audio playback error on stream URL:', audio.src);
+      if (ApiConfig.isNativePlatform()) {
+        setDownloadToast({
+          message: '⚠️ Aliran audio terputus. Pastikan server backend di PC (192.168.1.10:5188) aktif atau periksa IP di Pengaturan.',
+          type: 'error'
+        });
+        setTimeout(() => setDownloadToast(null), 5000);
+      }
+    };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
+    audio.addEventListener('error', onError);
 
     return () => {
       audio.removeEventListener('timeupdate', onTimeUpdate);
@@ -396,6 +408,7 @@ export const App: React.FC = () => {
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('error', onError);
     };
   }, []);
 
@@ -903,7 +916,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Main Dynamic Viewport */}
-        <main className="flex-1 w-full overflow-hidden flex flex-col pb-20 md:pb-24">
+        <main className="flex-1 w-full overflow-hidden flex flex-col pb-44 md:pb-28">
           {selectedArtist ? (
             <ArtistDetailView
               artist={selectedArtist}

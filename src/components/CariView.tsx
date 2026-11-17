@@ -113,7 +113,7 @@ export const CariView: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex-1 h-full overflow-y-auto px-4 sm:px-10 py-6 space-y-7 max-w-5xl mx-auto animate-fadeIn select-none pb-44">
+    <div className="flex-1 h-full overflow-y-auto overflow-x-hidden px-3.5 sm:px-10 py-5 space-y-6 max-w-5xl mx-auto animate-fadeIn select-none pb-48">
       {/* Header */}
       <div className="space-y-0.5">
         <span className="text-[10px] font-mono tracking-widest text-slate-500 dark:text-slate-400 uppercase font-bold">
@@ -126,14 +126,14 @@ export const CariView: React.FC<Props> = ({
 
       {/* Large Minimalist Liquid Glass Search Input */}
       <form onSubmit={onSearchSubmit} className="relative">
-        <div className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 rounded-2xl liquid-glass focus-within:ring-2 focus-within:ring-indigo-400/30 transition-all shadow-sm focus-within:shadow-md">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-5 py-3 rounded-2xl liquid-glass focus-within:ring-2 focus-within:ring-indigo-400/30 transition-all shadow-sm focus-within:shadow-md">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Ketik judul lagu, musisi, atau album..."
-            className="flex-1 bg-transparent text-sm sm:text-base font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+            className="flex-1 min-w-0 bg-transparent text-sm sm:text-base font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -149,18 +149,18 @@ export const CariView: React.FC<Props> = ({
           )}
           <button
             type="submit"
-            className="px-4 sm:px-5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-black font-extrabold text-xs hover:opacity-90 transition active:scale-95 shadow-md shrink-0"
+            className="px-3.5 sm:px-5 py-1.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-black font-extrabold text-xs hover:opacity-90 transition active:scale-95 shadow-md shrink-0"
           >
             Cari
           </button>
         </div>
       </form>
 
-      {/* Filter Tabs & Source Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Filter Tabs & Source Switcher with Horizontal Scroll */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none max-w-full">
         {/* Category Filters: Semua, Lagu, Artis, Album */}
         {searchQuery && (
-          <div className="flex items-center gap-1.5 liquid-glass-pill p-1 rounded-xl">
+          <div className="flex items-center gap-1 liquid-glass-pill p-1 rounded-xl shrink-0">
             {[
               { key: 'all', label: 'Semua' },
               { key: 'songs', label: `Lagu (${songs.length})` },
@@ -170,7 +170,7 @@ export const CariView: React.FC<Props> = ({
               <button
                 key={tab.key}
                 onClick={() => setActiveTabFilter(tab.key as any)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                   activeTabFilter === tab.key
                     ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow'
                     : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
@@ -183,10 +183,10 @@ export const CariView: React.FC<Props> = ({
         )}
 
         {/* Source Switcher: YouTube Music | Perangkat */}
-        <div className="flex items-center p-1 rounded-2xl liquid-glass-pill shrink-0">
+        <div className="flex items-center p-1 rounded-xl liquid-glass-pill shrink-0">
           <button
             onClick={() => setSourceFilter('youtube')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               sourceFilter === 'youtube'
                 ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
@@ -200,7 +200,7 @@ export const CariView: React.FC<Props> = ({
 
           <button
             onClick={() => setSourceFilter('perangkat')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
               sourceFilter === 'perangkat'
                 ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'

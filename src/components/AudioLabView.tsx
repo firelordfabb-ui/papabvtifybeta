@@ -193,7 +193,7 @@ export const AudioLabView: React.FC = () => {
   const allPresets = [...EQ_PRESETS, ...config.customPresets];
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 pb-32 animate-fadeIn select-none">
+    <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 pb-[max(10rem,calc(env(safe-area-inset-bottom,0px)+9rem))] animate-fadeIn select-none">
       {/* Header Banner */}
       <div className="liquid-glass rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-white/[0.12] shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/15 via-purple-500/10 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
@@ -222,7 +222,7 @@ export const AudioLabView: React.FC = () => {
           </div>
 
           {/* Section Selector Pills */}
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/40 border border-white/10 text-xs font-bold">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/40 border border-white/10 text-xs font-bold overflow-x-auto flex-nowrap scrollbar-none max-w-full shrink-0">
             <button
               onClick={() => setActiveTabSection('eq')}
               className={`px-3.5 py-1.5 rounded-xl transition ${

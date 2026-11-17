@@ -114,7 +114,7 @@ export const BottomNav: React.FC<Props> = ({
           {/* Backdrop Tap to Close */}
           <div className="flex-1" onClick={() => setIsMenuOpen(false)} />
 
-          <div className="bg-[#F8FAFF] dark:bg-[#12172a] rounded-t-[32px] border-t border-[#A8C5FF] dark:border-[#283556] p-6 pb-24 shadow-2xl space-y-4 max-h-[82vh] overflow-y-auto animate-slideUp">
+          <div className="bg-[#F8FAFF] dark:bg-[#12172a] rounded-t-[32px] border-t border-[#A8C5FF] dark:border-[#283556] p-6 pb-[max(7rem,calc(env(safe-area-inset-bottom,0px)+6rem))] shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto animate-slideUp">
             {/* Header with dismiss bar */}
             <div className="flex flex-col items-center pb-2">
               <div className="w-12 h-1 rounded-full bg-[#d2e2f8] dark:bg-[#283556] mb-3" />

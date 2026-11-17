@@ -261,7 +261,7 @@ export const PlayerModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-[#142247]/40 dark:bg-black/60 animate-fadeIn select-none">
-      <div className="relative w-full max-w-6xl mx-auto h-[96vh] rounded-t-[36px] bg-[#F8FAFF] dark:bg-[#12172a] flex flex-col overflow-hidden shadow-2xl border-t border-[#A8C5FF] dark:border-[#283556] animate-slideUp">
+      <div className="relative w-full max-w-6xl mx-auto h-[100dvh] sm:h-[96vh] rounded-t-3xl sm:rounded-t-[36px] bg-[#F8FAFF] dark:bg-[#12172a] flex flex-col overflow-hidden shadow-2xl border-t border-[#A8C5FF] dark:border-[#283556] animate-slideUp">
         
         {/* ==============================================================
             DYNAMIC AMBIENT GLOW BACKDROP (Soft Fantasy Pastel)
@@ -271,7 +271,7 @@ export const PlayerModal: React.FC<Props> = ({
         {/* ==============================================================
             TOP DISMISS BAR & VIEW SWITCHER
             ============================================================== */}
-        <div className="pt-3.5 pb-2.5 px-6 sm:px-10 flex flex-col items-center border-b border-[#dce7f7] dark:border-[#222c45] shrink-0 z-20">
+        <div className="pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-2.5 px-4 sm:px-10 flex flex-col items-center border-b border-[#dce7f7] dark:border-[#222c45] shrink-0 z-20">
           <button
             onClick={onClose}
             className="w-12 h-1.5 rounded-full bg-[#d2e2f8] dark:bg-[#283556] hover:bg-[#a8c5ff] transition mb-2.5 cursor-pointer"
@@ -378,7 +378,7 @@ export const PlayerModal: React.FC<Props> = ({
               LEFT PANE: FOTO ALBUM, JUDUL, NEXT, PAUSE, DURASI
               ============================================================ */}
           {(activeTab === 'player' || activeTab === 'split') && (
-            <div className={`flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 py-4 sm:py-5 flex flex-col justify-between space-y-3.5 sm:space-y-4 animate-fadeIn pb-24 sm:pb-8 ${
+            <div className={`flex-1 overflow-y-auto px-4 sm:px-6 md:px-10 py-4 sm:py-5 flex flex-col space-y-3.5 sm:space-y-4 animate-fadeIn pb-[max(7rem,calc(env(safe-area-inset-bottom,0px)+6rem))] sm:pb-8 ${
               activeTab === 'split' ? 'lg:w-[48%] lg:border-r lg:border-[#dce7f7] dark:lg:border-[#222c45]' : 'max-w-xl mx-auto w-full'
             }`}>
               
@@ -393,7 +393,7 @@ export const PlayerModal: React.FC<Props> = ({
               )}
 
               {/* High-Res Album Artwork with Elegant Fantasy Placeholder */}
-              <div className="relative w-44 h-44 sm:w-60 sm:h-60 lg:w-72 lg:h-72 mx-auto rounded-3xl overflow-hidden shadow-xl border border-[#dce7f7] dark:border-[#283556] shrink-0 group bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254]">
+              <div className="relative w-40 h-40 xs:w-48 xs:h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 mx-auto rounded-3xl overflow-hidden shadow-xl border border-[#dce7f7] dark:border-[#283556] shrink-0 group bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254]">
                 {!imageLoaded && !imageError && (
                   <div className="absolute inset-0 bg-gradient-to-tr from-[#dce7f7] to-[#e8f1fd] dark:from-[#1b233a] dark:to-[#253254] flex flex-col items-center justify-center p-4 text-center">
                     <Disc className="w-12 h-12 text-[#9ab3f5] animate-spin" style={{ animationDuration: '6s' }} />
@@ -802,7 +802,7 @@ export const PlayerModal: React.FC<Props> = ({
                 ref={containerRef}
                 onWheel={handleUserScroll}
                 onTouchMove={handleUserScroll}
-                className="relative flex-1 overflow-y-auto py-16 px-4 space-y-7 text-center scroll-smooth pr-2 select-text"
+                className="relative flex-1 overflow-y-auto py-12 px-4 space-y-7 text-center scroll-smooth pr-2 select-text pb-[max(7rem,calc(env(safe-area-inset-bottom,0px)+6rem))]"
               >
                 {!lyricsData ? (
                   // Loading Shimmer Skeleton with Title (Fantasy Styled)

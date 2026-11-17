@@ -112,7 +112,7 @@ export const BerandaView: React.FC<Props> = ({
   ];
 
   return (
-    <div className="flex-1 h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-10 py-3 space-y-3.5 max-w-7xl mx-auto animate-fadeIn select-none pb-32 relative">
+    <div className="flex-1 h-full overflow-y-auto overflow-x-hidden px-3 sm:px-6 md:px-10 py-3 space-y-3.5 max-w-7xl mx-auto animate-fadeIn select-none pb-[max(10rem,calc(env(safe-area-inset-bottom,0px)+9rem))] relative">
       {/* ==============================================================
           HERO SECTION WITH FANTASY CITADEL BACKDROP
           ============================================================== */}

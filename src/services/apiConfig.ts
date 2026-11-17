@@ -22,6 +22,10 @@ export class ApiConfig {
     return isCapacitor || isCapacitorScheme;
   }
 
+  public static isNativePlatform(): boolean {
+    return this.isNativeMobile();
+  }
+
   /**
    * Resolves the active backend server URL
    */
