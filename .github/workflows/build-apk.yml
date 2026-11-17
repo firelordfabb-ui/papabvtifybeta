@@ -33,9 +33,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          cache: 'gradle'
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x android/gradlew
