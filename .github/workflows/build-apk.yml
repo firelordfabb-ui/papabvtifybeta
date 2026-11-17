@@ -41,12 +41,18 @@ jobs:
       - name: Build Android APK with Gradle
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease assembleDebug --stacktrace
 
       - name: Prepare APK Output
         run: |
           mkdir -p apk-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/PAPABVTIFY.apk
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            echo "Using app-release.apk"
+            cp android/app/build/outputs/apk/release/app-release.apk apk-output/PAPABVTIFY.apk
+          else
+            echo "Falling back to app-debug.apk"
+            cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/PAPABVTIFY.apk
+          fi
           BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -n 1)
           echo "Using build-tools: $BUILD_TOOLS"
           $BUILD_TOOLS/apksigner verify --verbose apk-output/PAPABVTIFY.apk
