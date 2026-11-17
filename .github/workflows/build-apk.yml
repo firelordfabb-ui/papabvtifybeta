@@ -47,6 +47,9 @@ jobs:
         run: |
           mkdir -p apk-output
           cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/PAPABVTIFY.apk
+          BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -n 1)
+          echo "Using build-tools: $BUILD_TOOLS"
+          $BUILD_TOOLS/apksigner verify --verbose apk-output/PAPABVTIFY.apk
 
       - name: Upload APK Ready to Install
         uses: actions/upload-artifact@v4
