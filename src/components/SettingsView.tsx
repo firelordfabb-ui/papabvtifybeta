@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Zap, Palette, Clock, Trash2, Heart, Server, Wifi, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
-import { ApiConfig } from '../services/apiConfig';
+import { ApiConfig, DEFAULT_LAN_SERVER } from '../services/apiConfig';
 import { StorageService } from '../services/storage';
 
 export const SettingsView: React.FC = () => {
@@ -138,16 +138,22 @@ export const SettingsView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-[11px] font-semibold text-[#5d729c] dark:text-[#8fa1c4]">Pilihan Cepat:</span>
             <button
-              onClick={() => handleSetPresetServer('')}
+              onClick={() => handleSetPresetServer(DEFAULT_LAN_SERVER)}
               className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-[#edf3fd] dark:bg-[#1a233b] text-[#2c4b9b] dark:text-[#9ab3f5] border border-[#d2e2f8] dark:border-[#283556] hover:opacity-80 transition"
             >
-              Mode Mandiri (Cloud Direct)
+              PC Wi-Fi (192.168.1.10:5188)
             </button>
             <button
               onClick={() => handleSetPresetServer('http://127.0.0.1:5188')}
               className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-[#edf3fd] dark:bg-[#1a233b] text-[#2c4b9b] dark:text-[#9ab3f5] border border-[#d2e2f8] dark:border-[#283556] hover:opacity-80 transition"
             >
               Localhost (127.0.0.1:5188)
+            </button>
+            <button
+              onClick={() => handleSetPresetServer('')}
+              className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg bg-[#edf3fd] dark:bg-[#1a233b] text-[#2c4b9b] dark:text-[#9ab3f5] border border-[#d2e2f8] dark:border-[#283556] hover:opacity-80 transition"
+            >
+              Mode Mandiri (Cloud Direct)
             </button>
           </div>
 

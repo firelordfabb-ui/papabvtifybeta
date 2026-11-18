@@ -344,6 +344,13 @@ export const App: React.FC = () => {
 
   const handleNextRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
+  // Background Server Probing on Launch
+  useEffect(() => {
+    ApiConfig.probeBackend().then(isOnline => {
+      console.log(`[PAPABVTIFY] Server connection status: ${isOnline ? 'Online (LAN)' : 'Offline/Standalone'}`);
+    });
+  }, []);
+
   // Audio Engine Lifecycle & Listeners
   useEffect(() => {
     const engine = AudioEngine.getInstance();

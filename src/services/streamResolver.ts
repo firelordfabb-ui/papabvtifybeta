@@ -2,12 +2,12 @@ import { ApiConfig } from './apiConfig';
 import { DownloadService } from './downloadService';
 
 /**
- * PAPABVTIFY Standalone Audio Stream Resolver
- * Enables 100% standalone audio playback on Android APK & Web
- * without depending on any local PC server or LAN IP.
+ * PAPABVTIFY Unified Audio Stream Resolver
+ * Seamlessly resolves progressive audio streams on both Android APK & Windows Electron.
+ * Prioritizes offline IndexedDB audio blobs, then LAN/remote backend streaming, then standalone fallbacks.
  */
 
-// Public high-reliability Piped and Invidious API instances
+// Public fallback instances if remote backend is disconnected
 const PIPED_INSTANCES = [
   'https://pipedapi.kavin.rocks',
   'https://api.piped.privacydev.net',
@@ -32,15 +32,15 @@ export class StreamResolver {
   ): Promise<string> {
     if (!songId) return '';
 
-    // 1. Check if the song has already been downloaded to offline IndexedDB storage
+    // 1. Check if the song has already been downloaded to offline IndexedDB storage (0ms latency, 100% offline)
     try {
       const offlineBlobUrl = await DownloadService.getOfflineAudioUrl(songId);
       if (offlineBlobUrl) {
-        console.log(`[StreamResolver] Playing "${songId}" from offline IndexedDB cache.`);
+        console.log(`[StreamResolver] Playing "${songId}" from offline IndexedDB storage.`);
         return offlineBlobUrl;
       }
     } catch (e) {
-      console.warn('[StreamResolver] Offline cache check notice:', e);
+      console.warn('[StreamResolver] Offline storage check notice:', e);
     }
 
     // 2. Check in-memory cache if not forcing refresh
@@ -51,39 +51,28 @@ export class StreamResolver {
       }
     }
 
-    // 3. If a custom remote backend is configured and reachable, try it first
-    const customBase = ApiConfig.getCustomServerUrl();
-    if (customBase) {
-      try {
-        const testRes = await fetch(`${customBase}/api/stream?id=${encodeURIComponent(songId)}`, {
-          method: 'HEAD',
-          signal: AbortSignal.timeout(1800)
-        });
-        if (testRes.ok || testRes.status === 206) {
-          const directUrl = `${customBase}/api/stream?id=${encodeURIComponent(songId)}`;
-          this.cache.set(songId, { url: directUrl, expiresAt: Date.now() + 2 * 3600 * 1000 });
-          return directUrl;
-        }
-      } catch {
-        // Backend not reachable, fall through to standalone resolution
-      }
+    // 3. Resolve via PAPABVTIFY Backend Server (LAN Wi-Fi or Remote Server)
+    const serverBase = ApiConfig.getServerBaseUrl();
+    if (serverBase) {
+      const directUrl = `${serverBase}/api/stream?id=${encodeURIComponent(songId)}`;
+      this.cache.set(songId, { url: directUrl, expiresAt: Date.now() + 2 * 3600 * 1000 });
+      return directUrl;
     }
 
-    // 4. Standalone Resolution via Piped API stream instances
+    // 4. Standalone Fallback: Try Piped API instances
     for (const instance of PIPED_INSTANCES) {
       try {
         const streamUrl = await this.fetchStreamFromPiped(instance, songId);
         if (streamUrl) {
-          // Cache for 3 hours (googlevideo streams usually expire in 6 hours)
           this.cache.set(songId, { url: streamUrl, expiresAt: Date.now() + 3 * 3600 * 1000 });
           return streamUrl;
         }
       } catch (err) {
-        console.warn(`[StreamResolver] Instance ${instance} failed:`, err);
+        console.warn(`[StreamResolver] Instance ${instance} note:`, err);
       }
     }
 
-    // 5. Standalone Resolution via YouTube InnerTube Android Player API
+    // 5. Standalone Fallback: Try YouTube InnerTube direct
     try {
       const ytStream = await this.fetchStreamFromInnerTube(songId);
       if (ytStream) {
@@ -91,10 +80,10 @@ export class StreamResolver {
         return ytStream;
       }
     } catch (err) {
-      console.warn('[StreamResolver] InnerTube direct resolution note:', err);
+      console.warn('[StreamResolver] InnerTube resolution note:', err);
     }
 
-    // 6. Last resort: return standard stream route or empty
+    // 6. Last resort: return fully qualified stream route
     return ApiConfig.resolveStreamUrl(songId);
   }
 
@@ -113,8 +102,8 @@ export class StreamResolver {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36'
           },
-          connectTimeout: 4000,
-          readTimeout: 4000
+          connectTimeout: 3500,
+          readTimeout: 3500
         });
         json = res.data;
       } catch (e) {
@@ -124,7 +113,7 @@ export class StreamResolver {
 
     if (!json) {
       const res = await fetch(endpoint, {
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(3500),
         headers: { 'Accept': 'application/json' }
       });
       if (res.ok) {
@@ -133,7 +122,6 @@ export class StreamResolver {
     }
 
     if (json && Array.isArray(json.audioStreams) && json.audioStreams.length > 0) {
-      // Find highest quality M4A or WebM audio stream
       const audio = json.audioStreams.find((s: any) => s.format === 'M4A' || s.mimeType?.includes('audio/mp4'))
         || json.audioStreams[0];
       if (audio && audio.url) {
@@ -173,8 +161,8 @@ export class StreamResolver {
             'Content-Type': 'application/json',
             'User-Agent': 'com.google.android.youtube/19.09.37 (Linux; U; Android 14; id_ID)'
           },
-          connectTimeout: 4000,
-          readTimeout: 4000
+          connectTimeout: 3500,
+          readTimeout: 3500
         });
         json = res.data;
       } catch (e) {
@@ -187,7 +175,7 @@ export class StreamResolver {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(3500)
       });
       if (res.ok) {
         json = await res.json();

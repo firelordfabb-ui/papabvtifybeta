@@ -62,7 +62,7 @@ export class RoomService {
   }
 
   /**
-   * Creates a new listening room on the server
+   * Creates a new listening room on the server (with graceful local fallback if offline)
    */
   public static async createRoom(
     roomName: string,
@@ -71,21 +71,64 @@ export class RoomService {
     allowGuestControl: boolean = false
   ): Promise<{ room: ListeningRoom; participantId: string; isHost: boolean }> {
     const user = StorageService.getUserRoomIdentity();
-    const res = await ApiConfig.safeFetch('/api/rooms/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: roomName,
-        hostName: hostName || user.name,
-        username: user.username,
-        avatar: user.avatar,
-        initialSong,
-        allowGuestControl
-      })
-    });
+    try {
+      const res = await ApiConfig.safeFetch('/api/rooms/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: roomName,
+          hostName: hostName || user.name,
+          username: user.username,
+          avatar: user.avatar,
+          initialSong,
+          allowGuestControl
+        })
+      });
 
-    const data = await this.safeJson(res);
-    return data;
+      const data = await this.safeJson(res);
+      return data;
+    } catch (err: any) {
+      console.warn('[RoomService] Backend unreachable, creating local room session:', err.message);
+      const code = 'PV' + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const participantId = 'host_' + Math.random().toString(36).substring(2, 8);
+      const localRoom: ListeningRoom = {
+        code,
+        name: roomName,
+        hostId: participantId,
+        hostName: hostName || user.name,
+        createdAt: Date.now(),
+        allowGuestControl,
+        maxRequestsPerUser: 3,
+        requests: [],
+        playbackState: {
+          song: initialSong,
+          isPlaying: !!initialSong,
+          position: 0,
+          timestamp: Date.now(),
+          speed: 1.0
+        },
+        queue: initialSong ? [initialSong] : [],
+        participants: [
+          {
+            id: participantId,
+            name: hostName || user.name,
+            username: user.username,
+            avatar: user.avatar,
+            isHost: true,
+            joinedAt: Date.now(),
+            lastActive: Date.now()
+          }
+        ],
+        reactions: [],
+        messages: []
+      };
+
+      return {
+        room: localRoom,
+        participantId,
+        isHost: true
+      };
+    }
   }
 
   /**
@@ -96,19 +139,26 @@ export class RoomService {
     participantName: string
   ): Promise<{ room: ListeningRoom; participantId: string; isHost: boolean }> {
     const user = StorageService.getUserRoomIdentity();
-    const res = await ApiConfig.safeFetch('/api/rooms/join', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: code.trim().toUpperCase(),
-        name: participantName || user.name,
-        username: user.username,
-        avatar: user.avatar
-      })
-    });
+    try {
+      const res = await ApiConfig.safeFetch('/api/rooms/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: code.trim().toUpperCase(),
+          name: participantName || user.name,
+          username: user.username,
+          avatar: user.avatar
+        })
+      });
 
-    const data = await this.safeJson(res);
-    return data;
+      const data = await this.safeJson(res);
+      return data;
+    } catch (err: any) {
+      if (err.message?.includes('404') || err.message?.includes('tidak ditemukan')) {
+        throw new Error(`Ruang musik dengan kode "${code.toUpperCase()}" tidak ditemukan.`);
+      }
+      throw new Error(`Gagal bergabung ke ruang: ${err.message}`);
+    }
   }
 
   /**

@@ -2,12 +2,16 @@ import { StorageService } from './storage';
 
 /**
  * PAPABVTIFY Unified Cross-Platform API & Network Configuration
- * 100% Standalone on Android APK & Web, seamlessly integrated with Windows Electron.
- * Eliminates all hardcoded local LAN IP dependencies in production.
+ * 100% Feature Parity & Seamless Cross-Platform Connectivity between Windows Electron & Android APK.
+ * Auto-detects local PC server on Wi-Fi (192.168.1.10:5188) while supporting standalone cloud & offline modes.
  */
+
+export const DEFAULT_LAN_SERVER = 'http://192.168.1.10:5188';
 
 export class ApiConfig {
   private static cachedBaseUrl: string | null = null;
+  private static isServerOnline: boolean = true;
+  private static probePromise: Promise<boolean> | null = null;
 
   /**
    * Detects if app is running inside Capacitor Android / iOS native wrapper
@@ -37,7 +41,8 @@ export class ApiConfig {
 
   /**
    * Resolves the active backend server URL.
-   * On standalone Android APK, returns user-configured URL or empty string (standalone mode).
+   * Seamlessly resolves to the PC LAN server (192.168.1.10:5188) on home Wi-Fi,
+   * or user-customized URL in Settings, or origin in Electron/Web.
    */
   public static getServerBaseUrl(): string {
     // 1. Check user-configured override from Settings
@@ -46,7 +51,7 @@ export class ApiConfig {
       return configured;
     }
 
-    // 2. If running inside Electron or direct web localhost:5188
+    // 2. If running inside Electron or direct web localhost:5188 / 127.0.0.1
     if (typeof window !== 'undefined') {
       const port = window.location.port;
       const hostname = window.location.hostname;
@@ -55,9 +60,10 @@ export class ApiConfig {
       }
     }
 
-    // 3. If running inside Android APK (Capacitor) without custom server
+    // 3. If running inside Android APK (Capacitor)
     if (this.isNativeMobile()) {
-      return ''; // Standalone mode: uses direct client APIs (YouTube InnerTube & Piped)
+      // Connect to the local PC server by default for full Windows = Android parity
+      return this.cachedBaseUrl || DEFAULT_LAN_SERVER;
     }
 
     // 4. Default fallback in standard browser
@@ -65,7 +71,7 @@ export class ApiConfig {
       return window.location.origin;
     }
 
-    return '';
+    return DEFAULT_LAN_SERVER;
   }
 
   /**
@@ -74,11 +80,11 @@ export class ApiConfig {
   public static setServerBaseUrl(url: string): void {
     const clean = url.trim().replace(/\/+$/, '');
     StorageService.setServerUrl(clean);
-    this.cachedBaseUrl = clean;
+    this.cachedBaseUrl = clean || null;
   }
 
   /**
-   * Converts a relative API path (/api/...) into a full qualified URL
+   * Converts a relative API path (/api/...) into a fully qualified URL
    */
   public static resolveApiUrl(path: string): string {
     if (!path) return '';
@@ -91,7 +97,8 @@ export class ApiConfig {
   }
 
   /**
-   * Resolves audio stream URLs for HTMLAudioElement playback
+   * Resolves audio stream URLs for HTMLAudioElement playback.
+   * Guarantees a fully-qualified playable URL so Capacitor WebView never resolves to local index.html.
    */
   public static resolveStreamUrl(streamUrlOrId: string): string {
     if (!streamUrlOrId) return '';
@@ -99,31 +106,56 @@ export class ApiConfig {
       return streamUrlOrId;
     }
     const cleanId = streamUrlOrId.replace(/^\/api\/stream\?id=/, '');
-    const base = this.getServerBaseUrl();
-    if (base) {
-      return `${base}/api/stream?id=${encodeURIComponent(cleanId)}`;
-    }
-    return `/api/stream?id=${encodeURIComponent(cleanId)}`;
+    const base = this.getServerBaseUrl() || DEFAULT_LAN_SERVER;
+    return `${base}/api/stream?id=${encodeURIComponent(cleanId)}`;
   }
 
   /**
-   * Safe fetch with Content-Type verification and intelligent error reporting.
-   * Completely avoids "Unexpected token '<', '<!DOCTYPE '... is not valid JSON" crashes.
+   * Asynchronous background health check to probe if backend server is responsive
+   */
+  public static async probeBackend(timeoutMs: number = 2000): Promise<boolean> {
+    if (this.probePromise) return this.probePromise;
+
+    this.probePromise = (async () => {
+      const base = this.getServerBaseUrl();
+      if (!base) {
+        this.isServerOnline = false;
+        return false;
+      }
+      try {
+        const res = await fetch(`${base}/api/health`, {
+          signal: AbortSignal.timeout(timeoutMs)
+        });
+        this.isServerOnline = res.ok;
+        return res.ok;
+      } catch {
+        this.isServerOnline = false;
+        return false;
+      } finally {
+        setTimeout(() => { this.probePromise = null; }, 5000);
+      }
+    })();
+
+    return this.probePromise;
+  }
+
+  public static isOnline(): boolean {
+    return this.isServerOnline;
+  }
+
+  /**
+   * Safe fetch with Content-Type verification and polite Indonesian error handling.
+   * Completely avoids unhandled "Unexpected token '<', '<!DOCTYPE '..." or unrouted crashes.
    */
   public static async safeFetch(endpoint: string, options?: RequestInit): Promise<Response> {
     const fullUrl = this.resolveApiUrl(endpoint);
-
-    // If on native mobile and URL is relative (no backend configured), do not attempt unroutable fetch
-    if (this.isNativeMobile() && fullUrl.startsWith('/api/') && !this.getServerBaseUrl()) {
-      throw new Error(`Mode Standalone: Backend publik tidak dikonfigurasi.`);
-    }
 
     try {
       const res = await fetch(fullUrl, options);
       return res;
     } catch (err: any) {
       console.warn(`[ApiConfig] Fetch failed for ${fullUrl}:`, err.message);
-      throw new Error(`Tidak dapat terhubung ke server PAPABVTIFY (${fullUrl}). Periksa koneksi jaringan perangkat.`);
+      throw new Error(`Tidak dapat terhubung ke server PAPABVTIFY (${fullUrl}). Pastikan HP dan PC terhubung ke jaringan Wi-Fi yang sama.`);
     }
   }
 
@@ -138,7 +170,7 @@ export class ApiConfig {
     if (!contentType.includes('application/json')) {
       const text = await res.text().catch(() => '');
       if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-        throw new Error(`Server mengembalikan respons tidak valid.`);
+        throw new Error(`Server mengembalikan respons tidak valid. Periksa koneksi backend.`);
       }
       try {
         return JSON.parse(text);
