@@ -361,14 +361,14 @@ export const BerandaView: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none px-0.5">
           {recommendedTracks.map((song) => {
             const isCurrent = currentSong?.id === song.id;
             return (
               <div
                 key={song.id}
                 onClick={() => handleSongClick(song)}
-                className="w-40 sm:w-44 shrink-0 space-y-2 cursor-pointer group active:scale-95 transition-all"
+                className="w-32 sm:w-40 shrink-0 space-y-1.5 cursor-pointer group active:scale-95 transition-all"
               >
                 <div className={`relative aspect-square rounded-2xl overflow-hidden bg-slate-100 dark:bg-[#101A35] border border-[#dce7f7] dark:border-[#1E2D56] shadow-sm group-hover:shadow-md ${
                   isCurrent ? 'ring-2 ring-[#315BCE] dark:ring-[#42DDAA]' : ''
@@ -382,8 +382,8 @@ export const BerandaView: React.FC<Props> = ({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[#142247] text-white dark:bg-[#42DDAA] dark:text-[#070B18] flex items-center justify-center shadow-lg">
-                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#142247] text-white dark:bg-[#42DDAA] dark:text-[#070B18] flex items-center justify-center shadow-lg">
+                      <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current ml-0.5" />
                     </div>
                   </div>
                 </div>
@@ -392,13 +392,14 @@ export const BerandaView: React.FC<Props> = ({
                   <h4 className="text-xs sm:text-sm font-bold text-[#142247] dark:text-white truncate">
                     {song.title}
                   </h4>
-                  <p className="text-[11px] text-[#5d729c] dark:text-[#94A6D2] truncate mt-0.5 font-medium">
+                  <p className="text-[10px] sm:text-[11px] text-[#5d729c] dark:text-[#94A6D2] truncate mt-0.5 font-medium">
                     {song.artist}
                   </p>
                 </div>
               </div>
             );
           })}
+          <div className="w-3 shrink-0" />
         </div>
       </div>
 
@@ -420,14 +421,14 @@ export const BerandaView: React.FC<Props> = ({
           </span>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none px-0.5">
           {recentTracks.map((song) => {
             const isCurrent = currentSong?.id === song.id;
             return (
               <div
                 key={song.id}
                 onClick={() => handleSongClick(song)}
-                className="w-40 sm:w-44 shrink-0 space-y-2 cursor-pointer group active:scale-95 transition-all"
+                className="w-32 sm:w-40 shrink-0 space-y-1.5 cursor-pointer group active:scale-95 transition-all"
               >
                 <div className={`relative aspect-square rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-[#dce7f7] dark:border-[#222c45] shadow-sm group-hover:shadow-md ${
                   isCurrent ? 'ring-2 ring-[#142247]/40 dark:ring-[#9ab3f5]' : ''
@@ -441,8 +442,8 @@ export const BerandaView: React.FC<Props> = ({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[#142247] text-white flex items-center justify-center shadow-lg">
-                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#142247] text-white flex items-center justify-center shadow-lg">
+                      <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current ml-0.5" />
                     </div>
                   </div>
                 </div>
@@ -451,13 +452,14 @@ export const BerandaView: React.FC<Props> = ({
                   <h4 className="text-xs sm:text-sm font-bold text-[#142247] dark:text-white truncate">
                     {song.title}
                   </h4>
-                  <p className="text-[11px] text-[#5d729c] dark:text-[#8fa1c4] truncate mt-0.5 font-medium">
+                  <p className="text-[10px] sm:text-[11px] text-[#5d729c] dark:text-[#8fa1c4] truncate mt-0.5 font-medium">
                     {song.artist}
                   </p>
                 </div>
               </div>
             );
           })}
+          <div className="w-3 shrink-0" />
         </div>
       </div>
 

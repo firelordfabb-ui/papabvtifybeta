@@ -1,6 +1,7 @@
 import { Song, DownloadItem } from '../types/music';
 import { StorageService } from './storage';
 import { ApiConfig } from './apiConfig';
+import { StreamResolver } from './streamResolver';
 
 const DB_NAME = 'papabvtify_offline_db';
 const DB_VERSION = 1;
@@ -230,65 +231,70 @@ class DownloadServiceManager {
       status: 'preparing'
     });
 
-    const streamUrl = ApiConfig.resolveStreamUrl(song.streamUrl || song.id);
-
     try {
-      const response = await ApiConfig.safeFetch(streamUrl, {
+      // 3. Resolve direct audio stream URL (works standalone on Android without local PC)
+      const streamUrl = await StreamResolver.resolveAudioStream(song.id);
+      if (!streamUrl) {
+        throw new Error('Aliran audio tidak dapat ditemukan untuk lagu ini.');
+      }
+
+      const response = await fetch(streamUrl, {
         signal: controller.signal
       });
 
       if (!response.ok) {
-        throw new Error(`Server mengembalikan status HTTP ${response.status}`);
+        throw new Error(`Koneksi audio gagal (HTTP ${response.status})`);
       }
 
       const contentLength = response.headers.get('content-length');
       const totalBytes = contentLength ? parseInt(contentLength, 10) : (song.duration || 210) * 16000;
       const mimeType = response.headers.get('content-type') || 'audio/mpeg';
 
-      if (!response.body) {
-        throw new Error('ReadableStream audio tidak tersedia.');
-      }
+      let blob: Blob;
 
-      const reader = response.body.getReader();
-      const chunks: Uint8Array[] = [];
-      let loadedBytes = 0;
-      let lastReportTime = 0;
+      if (response.body) {
+        const reader = response.body.getReader();
+        const chunks: Uint8Array[] = [];
+        let loadedBytes = 0;
+        let lastReportTime = 0;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        if (value) {
-          chunks.push(value);
-          loadedBytes += value.length;
+          if (value) {
+            chunks.push(value);
+            loadedBytes += value.length;
 
-          const now = performance.now();
-          if (now - lastReportTime > 200 || loadedBytes >= totalBytes) {
-            lastReportTime = now;
-            const pct = Math.min(99, Math.round((loadedBytes / totalBytes) * 100));
+            const now = performance.now();
+            if (now - lastReportTime > 200 || loadedBytes >= totalBytes) {
+              lastReportTime = now;
+              const pct = Math.min(99, Math.round((loadedBytes / totalBytes) * 100));
 
-            this.notify({
-              songId: song.id,
-              percent: pct,
-              loadedBytes,
-              totalBytes,
-              status: 'downloading'
-            });
+              this.notify({
+                songId: song.id,
+                percent: pct,
+                loadedBytes,
+                totalBytes,
+                status: 'downloading'
+              });
 
-            // Update storage record periodically
-            StorageService.saveDownloadItem({
-              song,
-              status: 'downloading',
-              progress: pct,
-              fileSize: (loadedBytes / (1024 * 1024)).toFixed(1) + ' MB',
-              downloadedAt: Date.now()
-            });
+              // Update storage record periodically
+              StorageService.saveDownloadItem({
+                song,
+                status: 'downloading',
+                progress: pct,
+                fileSize: (loadedBytes / (1024 * 1024)).toFixed(1) + ' MB',
+                downloadedAt: Date.now()
+              });
+            }
           }
         }
+        blob = new Blob(chunks as BlobPart[], { type: mimeType });
+      } else {
+        // Fallback for environments where body ReadableStream is not exposed
+        blob = await response.blob();
       }
-
-      // Assemble full audio Blob
-      const blob = new Blob(chunks as BlobPart[], { type: mimeType });
 
       // Save to IndexedDB
       const db = await this.getDB();

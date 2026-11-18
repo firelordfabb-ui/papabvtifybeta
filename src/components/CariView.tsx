@@ -291,7 +291,7 @@ export const CariView: React.FC<Props> = ({
             Terakhir Diputar
           </h3>
 
-          <div className="flex gap-3.5 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex gap-3 sm:gap-3.5 overflow-x-auto pb-2 scrollbar-none px-0.5">
             {recentSearchedTracks.map((song) => (
               <div
                 key={song.id}
@@ -326,6 +326,7 @@ export const CariView: React.FC<Props> = ({
                 </div>
               </div>
             ))}
+            <div className="w-3 shrink-0" />
           </div>
         </div>
       )}

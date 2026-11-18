@@ -28,6 +28,7 @@ import { UnderwaterAudio, DEFAULT_UNDERWATER_CONFIG } from './services/underwate
 import { Playback } from './services/playbackManager';
 import { RoomService } from './services/roomService';
 import { ApiConfig } from './services/apiConfig';
+import { StreamResolver } from './services/streamResolver';
 import { UserAccount } from './types/music';
 
 // Main View Components
@@ -351,8 +352,14 @@ export const App: React.FC = () => {
     engine.setVolume(volume);
 
     if (!audio.src && currentSong) {
-      audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
-      updateMediaSession(currentSong);
+      StreamResolver.resolveAudioStream(currentSong.id).then(resolved => {
+        if (resolved) audio.src = resolved;
+        else audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
+        updateMediaSession(currentSong);
+      }).catch(() => {
+        audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
+        updateMediaSession(currentSong);
+      });
     }
 
     const onTimeUpdate = () => {
@@ -383,16 +390,27 @@ export const App: React.FC = () => {
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    const onError = () => {
+    const onError = async () => {
       setIsPlaying(false);
       console.warn('Audio playback error on stream URL:', audio.src);
-      if (ApiConfig.isNativePlatform()) {
-        setDownloadToast({
-          message: '⚠️ Aliran audio terputus. Pastikan server backend di PC (192.168.1.10:5188) aktif atau periksa IP di Pengaturan.',
-          type: 'error'
-        });
-        setTimeout(() => setDownloadToast(null), 5000);
+      // Attempt auto-recovery once with fresh stream
+      if (currentSong && audio.src && !audio.src.startsWith('blob:')) {
+        try {
+          const fresh = await StreamResolver.resolveAudioStream(currentSong.id, { forceRefresh: true });
+          if (fresh && fresh !== audio.src) {
+            console.log('[AudioEngine] Auto-recovering playback with fresh stream:', fresh);
+            audio.src = fresh;
+            await engine.play();
+            return;
+          }
+        } catch (_) {}
       }
+
+      setDownloadToast({
+        message: '⚠️ Aliran audio terputus. Periksa koneksi internet atau coba lagu lain.',
+        type: 'error'
+      });
+      setTimeout(() => setDownloadToast(null), 4000);
     };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
@@ -480,7 +498,12 @@ export const App: React.FC = () => {
       engine.pause();
     } else {
       if (!audio.src && currentSong) {
-        audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
+        try {
+          const resolved = await StreamResolver.resolveAudioStream(currentSong.id);
+          audio.src = resolved || ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
+        } catch (_) {
+          audio.src = ApiConfig.resolveStreamUrl(currentSong.streamUrl || currentSong.id);
+        }
       }
       try {
         await engine.play();
@@ -748,13 +771,14 @@ export const App: React.FC = () => {
       } catch (_) {}
     }
 
-    // Check if song has been saved to offline storage
+    // Check if song has been saved to offline storage or resolve standalone audio stream
     try {
       const offlineBlobUrl = await DownloadService.getOfflineAudioUrl(playableSong.id);
       if (offlineBlobUrl) {
         audio.src = offlineBlobUrl;
       } else {
-        audio.src = ApiConfig.resolveStreamUrl(playableSong.streamUrl || playableSong.id);
+        const streamUrl = await StreamResolver.resolveAudioStream(playableSong.id);
+        audio.src = streamUrl || ApiConfig.resolveStreamUrl(playableSong.streamUrl || playableSong.id);
       }
     } catch (_) {
       audio.src = ApiConfig.resolveStreamUrl(playableSong.streamUrl || playableSong.id);

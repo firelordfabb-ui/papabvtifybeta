@@ -328,6 +328,23 @@ function createServer() {
     const host = req.headers.host || '127.0.0.1';
     const url = new URL(req.url, `http://${host}`);
 
+    // --- Direct APK Download Route for Mobile Devices ---
+    if (url.pathname === '/download-apk' || url.pathname === '/PAPABVTIFY.apk' || url.pathname === '/apk') {
+      const apkPath = 'C:\\Users\\fabiangarfield\\Downloads\\PAPABVTIFY.apk';
+      if (fs.existsSync(apkPath)) {
+        const stat = fs.statSync(apkPath);
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.android.package-archive',
+          'Content-Length': stat.size,
+          'Content-Disposition': 'attachment; filename="PAPABVTIFY.apk"'
+        });
+        return fs.createReadStream(apkPath).pipe(res);
+      } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('APK belum siap atau belum selesai diunduh.');
+      }
+    }
+
     // --- API ENDPOINTS ---
     if (url.pathname.startsWith('/api/')) {
       // 0. Health Check

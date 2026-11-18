@@ -2,11 +2,9 @@ import { StorageService } from './storage';
 
 /**
  * PAPABVTIFY Unified Cross-Platform API & Network Configuration
- * Ensures 100% seamless backend communication across Windows Electron & Android APK.
+ * 100% Standalone on Android APK & Web, seamlessly integrated with Windows Electron.
+ * Eliminates all hardcoded local LAN IP dependencies in production.
  */
-
-// Host Wi-Fi / LAN IP where server.cjs runs
-export const DEFAULT_LAN_SERVER = 'http://192.168.1.10:5188';
 
 export class ApiConfig {
   private static cachedBaseUrl: string | null = null;
@@ -27,13 +25,25 @@ export class ApiConfig {
   }
 
   /**
-   * Resolves the active backend server URL
+   * Returns user-configured custom backend server URL (if explicitly set in Settings)
    */
-  public static getServerBaseUrl(): string {
-    // 1. Check user-configured override from Settings
+  public static getCustomServerUrl(): string {
     const configured = StorageService.getServerUrl();
     if (configured && configured.trim()) {
       return configured.trim().replace(/\/+$/, '');
+    }
+    return '';
+  }
+
+  /**
+   * Resolves the active backend server URL.
+   * On standalone Android APK, returns user-configured URL or empty string (standalone mode).
+   */
+  public static getServerBaseUrl(): string {
+    // 1. Check user-configured override from Settings
+    const configured = this.getCustomServerUrl();
+    if (configured) {
+      return configured;
     }
 
     // 2. If running inside Electron or direct web localhost:5188
@@ -45,17 +55,17 @@ export class ApiConfig {
       }
     }
 
-    // 3. If running inside Android APK (Capacitor)
+    // 3. If running inside Android APK (Capacitor) without custom server
     if (this.isNativeMobile()) {
-      return DEFAULT_LAN_SERVER;
+      return ''; // Standalone mode: uses direct client APIs (YouTube InnerTube & Piped)
     }
 
-    // 4. Default fallback
-    if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:')) {
+    // 4. Default fallback in standard browser
+    if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.startsWith('file:') && !window.location.origin.startsWith('capacitor:')) {
       return window.location.origin;
     }
 
-    return DEFAULT_LAN_SERVER;
+    return '';
   }
 
   /**
@@ -77,7 +87,7 @@ export class ApiConfig {
     }
     const base = this.getServerBaseUrl();
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `${base}${cleanPath}`;
+    return base ? `${base}${cleanPath}` : cleanPath;
   }
 
   /**
@@ -88,11 +98,12 @@ export class ApiConfig {
     if (streamUrlOrId.startsWith('blob:') || streamUrlOrId.startsWith('http://') || streamUrlOrId.startsWith('https://')) {
       return streamUrlOrId;
     }
-    if (streamUrlOrId.startsWith('/api/')) {
-      return this.resolveApiUrl(streamUrlOrId);
+    const cleanId = streamUrlOrId.replace(/^\/api\/stream\?id=/, '');
+    const base = this.getServerBaseUrl();
+    if (base) {
+      return `${base}/api/stream?id=${encodeURIComponent(cleanId)}`;
     }
-    // Bare YouTube ID passed
-    return this.resolveApiUrl(`/api/stream?id=${encodeURIComponent(streamUrlOrId)}`);
+    return `/api/stream?id=${encodeURIComponent(cleanId)}`;
   }
 
   /**
@@ -101,6 +112,12 @@ export class ApiConfig {
    */
   public static async safeFetch(endpoint: string, options?: RequestInit): Promise<Response> {
     const fullUrl = this.resolveApiUrl(endpoint);
+
+    // If on native mobile and URL is relative (no backend configured), do not attempt unroutable fetch
+    if (this.isNativeMobile() && fullUrl.startsWith('/api/') && !this.getServerBaseUrl()) {
+      throw new Error(`Mode Standalone: Backend publik tidak dikonfigurasi.`);
+    }
+
     try {
       const res = await fetch(fullUrl, options);
       return res;
@@ -121,7 +138,7 @@ export class ApiConfig {
     if (!contentType.includes('application/json')) {
       const text = await res.text().catch(() => '');
       if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-        throw new Error(`Server mengembalikan halaman web (HTML) alih-alih data JSON. Pastikan alamat server PAPABVTIFY (${this.getServerBaseUrl()}) aktif.`);
+        throw new Error(`Server mengembalikan respons tidak valid.`);
       }
       try {
         return JSON.parse(text);

@@ -199,13 +199,21 @@ export const REFERENCE_PLAYLIST: Song[] = [
 // In-memory cache for ultra-fast instantaneous searches
 const memorySearchCache = new Map<string, { timestamp: number; songs: Song[] }>();
 
+// High-reliability public Piped search instances
+const PIPED_SEARCH_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://api.piped.privacydev.net',
+  'https://piped-api.lunar.icu',
+  'https://pipedapi.tokhmi.xyz'
+];
+
 export class InnerTubeService {
   /**
    * Fast realtime search with client cache, multi-layer fallbacks:
    * 1. Check in-memory & local cache
-   * 2. Call configured backend /api/search
-   * 3. Fallback: Direct YouTube search (via native CapacitorHttp or YouTube InnerTube)
-   * 4. Fallback: Comprehensive local hit catalog
+   * 2. If backend configured, call /api/search with 1.8s safety timeout
+   * 3. Fallback: Standalone multi-source search (Piped API & YouTube InnerTube)
+   * 4. Fallback: Offline songs & comprehensive reference hit catalog
    */
   public static async search(query: string, signal?: AbortSignal): Promise<Song[]> {
     const cleanQ = query.trim().toLowerCase();
@@ -224,55 +232,146 @@ export class InnerTubeService {
       return storedCache;
     }
 
-    // 3. Try primary backend /api/search
-    try {
-      const res = await ApiConfig.safeFetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal });
-      const contentType = res.headers.get('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const data = await res.json().catch(() => []);
-        const rawSongs: Song[] = Array.isArray(data)
-          ? data.map((item: any) => ({
-              id: item.id,
-              title: item.title,
-              artist: item.artist,
-              album: item.album || 'Single',
-              duration: item.duration || 200,
-              thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
-              streamUrl: ApiConfig.resolveStreamUrl(`/api/stream?id=${item.id}`),
-              liked: StorageService.isFavorite(item.id)
-            }))
-          : [];
+    // 3. Try primary configured backend /api/search (ONLY if server URL is explicitly configured)
+    const serverBase = ApiConfig.getServerBaseUrl();
+    if (serverBase) {
+      try {
+        const timeoutSignal = AbortSignal.timeout(1800);
+        const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
 
-        if (rawSongs.length > 0) {
-          const ranked = this.rankResults(rawSongs, cleanQ);
-          memorySearchCache.set(cleanQ, { timestamp: Date.now(), songs: ranked });
-          StorageService.setSearchCache(cleanQ, ranked);
-          return ranked;
+        const res = await ApiConfig.safeFetch(`/api/search?q=${encodeURIComponent(query.trim())}`, { signal: combinedSignal });
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          const data = await res.json().catch(() => []);
+          const rawSongs: Song[] = Array.isArray(data)
+            ? data.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                artist: item.artist,
+                album: item.album || 'Single',
+                duration: item.duration || 200,
+                thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
+                streamUrl: item.id,
+                liked: StorageService.isFavorite(item.id)
+              }))
+            : [];
+
+          if (rawSongs.length > 0) {
+            const ranked = this.rankResults(rawSongs, cleanQ);
+            memorySearchCache.set(cleanQ, { timestamp: Date.now(), songs: ranked });
+            StorageService.setSearchCache(cleanQ, ranked);
+            return ranked;
+          }
         }
+      } catch (err: any) {
+        if (err.name === 'AbortError' && signal?.aborted) throw err;
+        console.warn('Configured backend search timed out or unreachable, falling back to standalone search:', err);
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError') throw err;
-      console.warn('Backend search unreachable, falling back to direct YouTube search:', err);
     }
 
-    // 4. Try direct YouTube search fallback (works directly on mobile via CapacitorHttp / YouTube InnerTube)
+    // 4. Standalone Multi-Source Search (Piped API & YouTube InnerTube)
     try {
-      const directResults = await this.searchDirectFromYouTube(query);
-      if (directResults.length > 0) {
-        const ranked = this.rankResults(directResults, cleanQ);
+      const standaloneResults = await this.searchStandalone(query);
+      if (standaloneResults.length > 0) {
+        const ranked = this.rankResults(standaloneResults, cleanQ);
         memorySearchCache.set(cleanQ, { timestamp: Date.now(), songs: ranked });
         StorageService.setSearchCache(cleanQ, ranked);
         return ranked;
       }
     } catch (err) {
-      console.warn('Direct YouTube search error:', err);
+      console.warn('Standalone search note:', err);
     }
 
-    // 5. Fallback search across local reference catalog
+    // 5. Offline Fallback: Search across local reference catalog & saved favorites
     const localFiltered = REFERENCE_PLAYLIST.filter(
       s => s.title.toLowerCase().includes(cleanQ) || s.artist.toLowerCase().includes(cleanQ)
     );
-    return this.rankResults(localFiltered.length > 0 ? localFiltered : REFERENCE_PLAYLIST.slice(0, 8), cleanQ);
+    return this.rankResults(localFiltered.length > 0 ? localFiltered : REFERENCE_PLAYLIST.slice(0, 10), cleanQ);
+  }
+
+  /**
+   * Standalone Multi-Source Realtime Search
+   */
+  public static async searchStandalone(query: string): Promise<Song[]> {
+    // A. Try Piped API search instances
+    for (const instance of PIPED_SEARCH_INSTANCES) {
+      try {
+        const pipedResults = await this.searchFromPiped(instance, query);
+        if (pipedResults.length > 0) {
+          return pipedResults;
+        }
+      } catch (e) {
+        console.warn(`[InnerTubeService] Piped instance ${instance} search failed:`, e);
+      }
+    }
+
+    // B. Try YouTube InnerTube direct search
+    return await this.searchDirectFromYouTube(query);
+  }
+
+  /**
+   * Piped API Search Engine
+   */
+  private static async searchFromPiped(instanceUrl: string, query: string): Promise<Song[]> {
+    const endpoint = `${instanceUrl}/search?q=${encodeURIComponent(query)}&filter=music_songs`;
+    let json: any = null;
+
+    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+      try {
+        const { CapacitorHttp } = await import('@capacitor/core');
+        const res = await CapacitorHttp.get({
+          url: endpoint,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36'
+          },
+          connectTimeout: 3500,
+          readTimeout: 3500
+        });
+        json = res.data;
+      } catch (e) {
+        console.warn('[InnerTubeService] CapacitorHttp Piped search error:', e);
+      }
+    }
+
+    if (!json) {
+      const res = await fetch(endpoint, {
+        signal: AbortSignal.timeout(3500),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        json = await res.json();
+      }
+    }
+
+    const items = Array.isArray(json) ? json : (json?.items || []);
+    const songs: Song[] = [];
+
+    for (const item of items) {
+      let videoId = item.url ? item.url.replace('/watch?v=', '') : item.id;
+      if (!videoId) continue;
+      // Strip any extra URL query params
+      videoId = videoId.split('&')[0];
+
+      const title = item.title;
+      const artist = item.uploaderName || item.uploader || 'Artis';
+      const duration = typeof item.duration === 'number' ? item.duration : 210;
+      const thumbnail = item.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+      if (videoId && title) {
+        songs.push({
+          id: videoId,
+          title,
+          artist,
+          album: 'YouTube Music',
+          duration,
+          thumbnail,
+          streamUrl: videoId,
+          liked: StorageService.isFavorite(videoId)
+        });
+      }
+    }
+
+    return songs;
   }
 
   /**
@@ -304,7 +403,9 @@ export class InnerTubeService {
             headers: {
               'Content-Type': 'application/json',
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+            },
+            connectTimeout: 4000,
+            readTimeout: 4000
           });
           json = res.data;
         } catch (e) {
@@ -316,7 +417,8 @@ export class InnerTubeService {
         const res = await fetch('https://www.youtube.com/youtubei/v1/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(4000)
         });
         if (res.ok) {
           json = await res.json();
@@ -351,7 +453,7 @@ export class InnerTubeService {
                 album: 'YouTube Music',
                 duration,
                 thumbnail: thumb || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                streamUrl: ApiConfig.resolveStreamUrl(`/api/stream?id=${videoId}`),
+                streamUrl: videoId,
                 liked: StorageService.isFavorite(videoId)
               });
             }
